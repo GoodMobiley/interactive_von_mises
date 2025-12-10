@@ -1,0 +1,1 @@
+add_library(tiny_file_dialogs tinyfiledialogs.c)

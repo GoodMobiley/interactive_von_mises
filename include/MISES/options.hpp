@@ -1,0 +1,31 @@
+#ifndef MISES_OPTIONS_HPP
+#define MISES_OPTIONS_HPP
+
+// Pallet Options
+#define MISES_BACKGROUND_COLOR {0.15f, 0.15f, 0.15f}
+#define MISES_PALLET_COLOR {0.10f, 0.10f, 0.10f}
+
+#define MISES_MARGIN 8
+#define MISES_PALLET_RADIUS 8
+
+// General Drawing Options
+#define MISES_AXIS_COLOR {1.0f, 1.0f, 1.0f}
+#define MISES_GRID_COLOR {0.25f, 0.25f, 0.25f}
+
+#define MISES_VERTEX_COUNT 720
+#define MISES_MAX_ZERO_COUNT 20
+#define MISES_PADDING 18
+#define MISES_GRID_SPACING 0.25f
+
+// Cylinder Options
+#define MISES_CIRCLE_COLOR {0.0f, 1.0f, 0.9f}
+#define MISES_CIRCLE_CENTER_COLOR MISES_CIRCLE_COLOR
+#define MISES_ZERO_COLOR {1.0f, 0.3f, 0.0f}
+
+#define MISES_SPRITE_SIZE 10
+#define MISES_SELECTION_RADIUS 8
+
+// Airfoil Options
+#define MISES_AIRFOIL_COLOR MISES_CIRCLE_COLOR
+
+#endif

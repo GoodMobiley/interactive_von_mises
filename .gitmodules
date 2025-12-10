@@ -1,0 +1,9 @@
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "extern/linmath"]
+	path = extern/linmath
+	url = https://github.com/datenwolf/linmath.h.git
+[submodule "extern/tinyfiledialogs"]
+	path = extern/tinyfiledialogs
+	url = git://git.code.sf.net/p/tinyfiledialogs/code
