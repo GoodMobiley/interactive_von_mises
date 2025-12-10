@@ -1,5 +1,5 @@
-#ifndef MISES_PRESSURE_HPP
-#define MISES_PRESSURE_HPP
+#ifndef MISES_VELOCITIES_HPP
+#define MISES_VELOCITIES_HPP
 
 #include <MISES/geometry.hpp>
 
@@ -8,7 +8,7 @@
 
 namespace mises{
 
-class Pressure{
+class Velocities{
   public:
     static void Initialize();
     static void RenderFrame();
@@ -19,7 +19,7 @@ class Pressure{
     static Rect GetFrameRect();
     static void SetFrameRect(Rect frame);
 
-    static void CalculatePressure();
+    static void CalculateVelocities();
 
   private:
     static void DrawGrid();

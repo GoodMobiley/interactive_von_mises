@@ -2,7 +2,7 @@
 
 #include <MISES/options.hpp>
 #include <MISES/cylinder.hpp>
-#include <MISES/pressure.hpp>
+#include <MISES/velocities.hpp>
 
 #include <tinyfiledialogs.h>
 
@@ -130,5 +130,5 @@ void Airfoil::SaveAirfoil(){
 }
 
 void Airfoil::OnVertexUpdate(){
-    Pressure::CalculatePressure();
+    Velocities::CalculateVelocities();
 }
