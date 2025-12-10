@@ -97,9 +97,6 @@ void Cylinder::RenderFrame(){
 }
 
 void Cylinder::DrawGrid(){
-    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
-    const double coeff = 0.5 * min_dim - MISES_PADDING;
-
     Shader::SetScale(1.0f);
 
     const vec2 position = {0.0f, 0.0f};
@@ -108,40 +105,45 @@ void Cylinder::DrawGrid(){
     const vec3 color = MISES_GRID_COLOR;
     Shader::SetColor(color);
 
-    const double x_norm_left  = -0.5 * Frame.width / coeff;
-    const double x_norm_right = -x_norm_left;
+    const Complex complex_bottom_left = NormalizedPointToComplex(
+        FramePointToNormalizedPoint({0.0, 0.0})
+    );
 
-    const double y_norm_bottom = -0.5 * Frame.height / coeff;
-    const double y_norm_top    = -y_norm_bottom;
+    const Complex complex_top_right = NormalizedPointToComplex(
+        FramePointToNormalizedPoint({Frame.width, Frame.height})
+    );
 
-    double xi_left  = x_norm_left  * A + Mu.real();
-    double xi_right = x_norm_right * A + Mu.real();
+    const Complex complex_range = complex_top_right - complex_bottom_left;
 
-    double eta_bottom = y_norm_bottom * A + Mu.imag();
-    double eta_top    = y_norm_top    * A + Mu.imag();
-
-    const bool draw_xi  = xi_right - xi_left    < Frame.width  * MISES_GRID_SPACING;
-    const bool draw_eta = eta_top  - eta_bottom < Frame.height * MISES_GRID_SPACING;
+    const bool draw_xi  = complex_range.real() < Frame.width  * MISES_GRID_SPACING;
+    const bool draw_eta = complex_range.imag() < Frame.height * MISES_GRID_SPACING;
 
     if(draw_xi && draw_eta){
         glBegin(GL_LINES);
 
-        for(int i = xi_left / MISES_GRID_SPACING; i < xi_right / MISES_GRID_SPACING; ++i){ if(i != 0){
-            const double xi = i * MISES_GRID_SPACING;
-            const double x_norm = (xi - Mu.real()) / A;
-            const double x = x_norm * coeff + 0.5 * Frame.width;
+        for(
+            int i = complex_bottom_left.real() / MISES_GRID_SPACING; 
+            i < complex_top_right.real() / MISES_GRID_SPACING; 
+            ++i
+        ){ if(i != 0){
+            const Point position = NormalizedPointToFramePoint(
+                ComplexToNormalizedPoint(Complex(i * MISES_GRID_SPACING, 0.0))
+            );
 
-            glVertex2f(x, 0.0);
-            glVertex2f(x, Frame.height);
+            glVertex2f(position.x, 0.0);
+            glVertex2f(position.x, Frame.height);
         }}
 
-        for(int i = eta_bottom / MISES_GRID_SPACING; i < eta_top / MISES_GRID_SPACING; ++i){ if(i != 0){
-            const double eta = i * MISES_GRID_SPACING;
-            const double y_norm = (eta - Mu.imag()) / A;
-            const double y = y_norm * coeff + 0.5 * Frame.height;
+        for(int i = complex_bottom_left.imag() / MISES_GRID_SPACING; 
+            i < complex_top_right.imag() / MISES_GRID_SPACING; 
+            ++i
+        ){ if(i != 0){
+            const Point position = NormalizedPointToFramePoint(
+                ComplexToNormalizedPoint(Complex(0.0, i * MISES_GRID_SPACING))
+            );
 
-            glVertex2f(0.0, y);
-            glVertex2f(Frame.width, y);
+            glVertex2f(0.0,         position.y);
+            glVertex2f(Frame.width, position.y);
         }}
 
         glEnd();
@@ -159,14 +161,9 @@ void Cylinder::DrawGrid(){
 }
 
 void Cylinder::DrawAxes(){
-    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
-    const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-    const double y_norm = -Mu.imag() / A;
-    const double y = 0.5 * Frame.height + y_norm * coeff;
-
-    const double x_norm = -Mu.real() / A;
-    const double x = 0.5 * Frame.width + x_norm * coeff;
+    const Point origin = NormalizedPointToFramePoint(
+        ComplexToNormalizedPoint(Complex(0.0, 0.0))
+    );
 
     Shader::SetScale(1.0f);
 
@@ -177,20 +174,20 @@ void Cylinder::DrawAxes(){
     Shader::SetColor(color);
 
     glBegin(GL_LINES);
-    glVertex2f(0.0, y);
-    glVertex2f(Frame.width, y);
+    glVertex2f(0.0,         origin.y);
+    glVertex2f(Frame.width, origin.y);
     glEnd();
 
     glBegin(GL_LINES);
-    glVertex2f(x, 0.0);
-    glVertex2f(x, Frame.height);
+    glVertex2f(origin.x, 0.0);
+    glVertex2f(origin.x, Frame.height);
     glEnd();
 }
 
 void Cylinder::DrawCircle(){
-    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
+    const Point frame_top_right = NormalizedPointToFramePoint({1.0, 1.0});
 
-    Shader::SetScale(0.5 * min_dim - MISES_PADDING);
+    Shader::SetScale(frame_top_right.x - 0.5 * Frame.width);
 
     const vec2 position = {
         static_cast<float>(0.5f * Frame.width), 
@@ -214,8 +211,6 @@ void Cylinder::DrawCircle(){
 }
 
 void Cylinder::DrawZeros(){
-    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
-
     Shader::SetScale(0.5f * MISES_SPRITE_SIZE);
 
     const vec3 color = MISES_ZERO_COLOR;
@@ -224,15 +219,15 @@ void Cylinder::DrawZeros(){
     glBindVertexArray(ZeroVertexArray);
 
     for(Complex* zero : Zeros){
-        const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-        const double x_norm = (zero->real() - Mu.real()) / A;
-        const double y_norm = (zero->imag() - Mu.imag()) / A;
+        const Point position_point = NormalizedPointToFramePoint(
+            ComplexToNormalizedPoint(*zero)
+        );
 
         const vec2 position = {
-            static_cast<float>(0.5f * Frame.width  + x_norm * coeff),
-            static_cast<float>(0.5f * Frame.height + y_norm * coeff)
+            static_cast<float>(position_point.x),
+            static_cast<float>(position_point.y)
         };
+        
         Shader::SetTrans(position);
 
         glDrawArrays(GL_LINE_LOOP, 0, ZeroVertexCount);
