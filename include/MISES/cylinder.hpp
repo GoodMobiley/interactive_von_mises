@@ -22,12 +22,19 @@ class Cylinder{
     static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mod);
 
     static Rect GetFrameRect();
-    static void SetFrameRect(Rect frame);
+    static void SetFrameRect(const Rect frame);
+
+    static Point ComplexToNormalizedPoint(const Complex value);
+    static Complex NormalizedPointToComplex(const Point norm_point);
+
+    static Point NormalizedPointToFramePoint(const Point norm_point);
+    static Point FramePointToNormalizedPoint(const Point frame_point);
 
     static double  GetA();
     static Complex GetMu();
 
-    static bool SetMu(const Complex mu);
+    static void SetMu(const Complex mu);
+    static void SetOrigin(const Point norm_point);
 
     static std::vector<Complex> GetZeros();
     static bool AddZero(const Complex value);

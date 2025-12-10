@@ -11,37 +11,16 @@ class MovableZero : public Complex, public Movable {
     MovableZero(const Complex value) : Complex(value) {}
 
     Point get_relative_position(const Point point) const {
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
-
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-        const double x_norm = (real() - mu.real()) / a;
-        const double y_norm = (imag() - mu.imag()) / a;
-
-        Point position;
-        position.x = 0.5 * frame.width  + x_norm * coeff;
-        position.y = 0.5 * frame.height + y_norm * coeff;
+        const Point position = Cylinder::NormalizedPointToFramePoint(
+            Cylinder::ComplexToNormalizedPoint(*this)
+        );
 
         return position - point;
     }
 
     void set_position(const Point position){
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
-
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 1.0 / (0.5 * min_dim - MISES_PADDING);
-
-        const double x_norm = (position.x - 0.5 * frame.width)  * coeff;
-        const double y_norm = (position.y - 0.5 * frame.height) * coeff;
-
-        Cylinder::SetZero(this, Complex(
-            x_norm * a + mu.real(),
-            y_norm * a + mu.imag()
+        Cylinder::SetZero(this, Cylinder::NormalizedPointToComplex(
+            Cylinder::FramePointToNormalizedPoint(position)
         ));
     }
 };
@@ -49,48 +28,24 @@ class MovableZero : public Complex, public Movable {
 class MovableXiAxis : public Movable {
   public:
     Point get_relative_position(const Point point) const {
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
+        const Point position = Cylinder::NormalizedPointToFramePoint(
+            Cylinder::ComplexToNormalizedPoint(Complex(0.0, 0.0))
+        );        
 
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-        const double y_norm = -mu.imag() / a;
-        const double y = 0.5 * frame.height + y_norm * coeff;
-
-        Point relative_position;
-        relative_position.x = 0.0;
-        relative_position.y = y - point.y;
-
-        return relative_position;
+        return {
+            0.0,
+            position.y - point.y
+        };
     }
 
     void set_position(const Point position){
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
+        Point norm_position = Cylinder::FramePointToNormalizedPoint(position);
+        Point origin = Cylinder::ComplexToNormalizedPoint(Complex(0.0, 0.0));
 
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 1.0 / (0.5 * min_dim - MISES_PADDING);
-
-        const double x_norm = -mu.real() / a;
-        const double y_norm = (position.y - 0.5 * frame.height) * coeff;
-
-        double mu_real;
-        double mu_imag;
-        
-        if(x_norm == 0.0){
-            mu_real = 0.0;
-            mu_imag = (y_norm >= 0? -1.0 : 1.0) * std::sqrt(y_norm*y_norm / (1.0 - y_norm*y_norm));
-        }
-        else{
-            const double mu_c = (y_norm*y_norm - 1.0) / (x_norm*x_norm) + 1.0;
-            mu_real = (1.0 + (x_norm >= 0 ? 1.0: -1.0) * std::sqrt(1.0 - mu_c)) / mu_c;
-            mu_imag = mu_real * y_norm / x_norm;
-        }
-
-        Cylinder::SetMu(Complex(mu_real, mu_imag));
+        Cylinder::SetOrigin({
+            origin.x,
+            norm_position.y
+        });
     }
 
     GLFWcursor* hover_cursor(){
@@ -107,48 +62,24 @@ class MovableXiAxis : public Movable {
 class MovableEtaAxis : public Movable {
   public:
     Point get_relative_position(const Point point) const {
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
+        const Point position = Cylinder::NormalizedPointToFramePoint(
+            Cylinder::ComplexToNormalizedPoint(Complex(0.0, 0.0))
+        );        
 
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-        const double x_norm = -mu.real() / a;
-        const double x = 0.5 * frame.width + x_norm * coeff;
-
-        Point relative_position;
-        relative_position.x = x - point.x;
-        relative_position.y = 0.0;
-
-        return relative_position;
+        return {
+            position.x - point.x,
+            0.0
+        };
     }
 
     void set_position(const Point position){
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
+        Point norm_position = Cylinder::FramePointToNormalizedPoint(position);
+        Point origin = Cylinder::ComplexToNormalizedPoint(Complex(0.0, 0.0));
 
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 1.0 / (0.5 * min_dim - MISES_PADDING);
-
-        const double x_norm = (position.x - 0.5 * frame.width) * coeff;
-        const double y_norm = -mu.imag() / a;
-
-        double mu_real;
-        double mu_imag;
-        
-        if(x_norm == 0.0){
-            mu_real = 0.0;
-            mu_imag = (y_norm >= 0? -1.0 : 1.0) * std::sqrt(y_norm*y_norm / (1.0 - y_norm*y_norm));
-        }
-        else{
-            const double mu_c = (y_norm*y_norm - 1.0) / (x_norm*x_norm) + 1.0;
-            mu_real = (1.0 + (x_norm >= 0 ? 1.0: -1.0) * std::sqrt(1.0 - mu_c)) / mu_c;
-            mu_imag = mu_real * y_norm / x_norm; 
-        }
-
-        Cylinder::SetMu(Complex(mu_real, mu_imag));
+        Cylinder::SetOrigin({
+            norm_position.x,
+            origin.y
+        });
     }
 
     GLFWcursor* hover_cursor(){
@@ -165,48 +96,17 @@ class MovableEtaAxis : public Movable {
 class MovableOrigin : public Movable {
   public:
     Point get_relative_position(const Point point) const {
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
-
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 0.5 * min_dim - MISES_PADDING;
-
-        const double x_norm = -mu.real() / a;
-        const double y_norm = -mu.imag() / a;
-
-        Point position;
-        position.x = 0.5 * frame.width  + x_norm * coeff;
-        position.y = 0.5 * frame.height + y_norm * coeff;
+        const Point position = Cylinder::NormalizedPointToFramePoint(
+            Cylinder::ComplexToNormalizedPoint(Complex(0.0, 0.0))
+        );
 
         return position - point;
     }
 
     void set_position(const Point position){
-        const double a = Cylinder::GetA();
-        const Complex mu = Cylinder::GetMu();
-        const Rect frame = Cylinder::GetFrameRect();
-
-        const double min_dim = frame.width > frame.height ? frame.height : frame.width;
-        const double coeff = 1.0 / (0.5 * min_dim - MISES_PADDING);
-
-        const double x_norm = (position.x - 0.5 * frame.width ) * coeff;
-        const double y_norm = (position.y - 0.5 * frame.height) * coeff;
-
-        double mu_real;
-        double mu_imag;
-        
-        if(x_norm == 0.0){
-            mu_real = 0.0;
-            mu_imag = (y_norm >= 0? -1.0 : 1.0) * std::sqrt(y_norm*y_norm / (1.0 - y_norm*y_norm));
-        }
-        else{
-            const double mu_c = (y_norm*y_norm - 1.0) / (x_norm*x_norm) + 1.0;
-            mu_real = (1.0 + (x_norm >= 0 ? 1.0: -1.0) * std::sqrt(1.0 - mu_c)) / mu_c;
-            mu_imag = mu_real * y_norm / x_norm; 
-        }
-
-        Cylinder::SetMu(Complex(mu_real, mu_imag));
+        Cylinder::SetOrigin(
+            Cylinder::FramePointToNormalizedPoint(position)
+        );
     }
 
     GLFWcursor* hover_cursor(){
@@ -246,16 +146,14 @@ void Cylinder::CursorPosCallback(GLFWwindow* window, double x_pos, double y_pos)
     CursorPos.x = x_pos;
     CursorPos.y = Frame.height - y_pos;
 
-    if(Mouse1Hold){
-        if(!SelectedItem)
-            return;
-
+    if(!Mouse1Hold){
+        UpdateSelection();
+    }
+    else if(SelectedItem){
         SelectedItem->set_position(CursorPos + RelativeSelectionPos);
     }
-    else{
-        UpdateSelection();
-        UpdateCursor();
-    }
+
+    UpdateCursor();
 }
 
 void Cylinder::MouseButtonCallback(GLFWwindow* window, int button, int action, int mod){
@@ -273,9 +171,6 @@ void Cylinder::MouseButtonCallback(GLFWwindow* window, int button, int action, i
                     x_norm * A + Mu.real(),
                     y_norm * A + Mu.imag()
                 ));
-
-                UpdateSelection();
-                UpdateCursor();
             }
 
             Mouse1Hold = true;
@@ -286,20 +181,54 @@ void Cylinder::MouseButtonCallback(GLFWwindow* window, int button, int action, i
     }
     else if(button == GLFW_MOUSE_BUTTON_2){
         if(SelectedItem){
-            RemoveZero(static_cast<MovableZero*>(SelectedItem));
-
-            UpdateSelection();
-            UpdateCursor();
+            RemoveZero(static_cast<MovableZero*>(SelectedItem));            
         }
     }
+
+    UpdateSelection();
+    UpdateCursor();
 }
 
 Rect Cylinder::GetFrameRect(){
     return Frame;
 }
 
-void Cylinder::SetFrameRect(Rect frame){
+void Cylinder::SetFrameRect(const Rect frame){
     Frame = frame;
+}
+
+Point Cylinder::ComplexToNormalizedPoint(const Complex value){
+    return {
+        (value.real() - Mu.real()) / A,
+        (value.imag() - Mu.imag()) / A
+    };
+}
+
+Complex Cylinder::NormalizedPointToComplex(const Point norm_point){
+    return Complex(
+        norm_point.x * A + Mu.real(),
+        norm_point.y * A + Mu.imag()
+    );
+}
+
+Point Cylinder::NormalizedPointToFramePoint(const Point norm_point){
+    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
+    const double coeff = 0.5 * min_dim - MISES_PADDING;
+
+    return {
+        0.5 * Frame.width  + norm_point.x * coeff,
+        0.5 * Frame.height + norm_point.y * coeff
+    };
+}
+
+Point Cylinder::FramePointToNormalizedPoint(const Point frame_point){
+    const double min_dim = Frame.width > Frame.height ? Frame.height : Frame.width;
+    const double coeff = 1.0 / (0.5 * min_dim - MISES_PADDING);
+
+    return {
+        (frame_point.x - 0.5 * Frame.width)  * coeff,
+        (frame_point.y - 0.5 * Frame.height) * coeff
+    };
 }
 
 double Cylinder::GetA(){
@@ -310,12 +239,28 @@ Complex Cylinder::GetMu(){
     return Mu;
 }
 
-bool Cylinder::SetMu(const Complex mu){
+void Cylinder::SetMu(const Complex mu){
     Mu = mu;
     A = std::abs(Complex(1.0, 0.0) - Mu);
 
     OnMuUpdate();
-    return true;
+}
+
+void Cylinder::SetOrigin(const Point norm_point){
+    double mu_real;
+    double mu_imag;
+    
+    if(norm_point.x == 0.0){
+        mu_real = 0.0;
+        mu_imag = (norm_point.y >= 0? -1.0 : 1.0) * std::sqrt(norm_point.y*norm_point.y / (1.0 - norm_point.y*norm_point.y));
+    }
+    else{
+        const double mu_c = (norm_point.y*norm_point.y - 1.0) / (norm_point.x*norm_point.x) + 1.0;
+        mu_real = (1.0 + (norm_point.x >= 0 ? 1.0: -1.0) * std::sqrt(1.0 - mu_c)) / mu_c;
+        mu_imag = mu_real * norm_point.y / norm_point.x; 
+    }
+
+    SetMu(Complex(mu_real, mu_imag));
 }
 
 std::vector<Complex> Cylinder::GetZeros(){
