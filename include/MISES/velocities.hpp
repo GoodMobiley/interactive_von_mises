@@ -24,10 +24,12 @@ class Velocities{
   private:
     static void DrawGrid();
     static void DrawAxes();
-    static void DrawPressure();
+    static void DrawVelocities();
 
     static Rect Frame;
 
+    static vec2 VelocityVertices[];
+    static double MaxVelocity;
 };
 
 }

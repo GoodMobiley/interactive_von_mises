@@ -24,7 +24,10 @@ class Airfoil{
     static Rect GetFrameRect();
     static void SetFrameRect(Rect frame);
 
+    static double GetFrameRegionWidth();
+
     static std::vector<Complex> GetCoefficients();
+    static void GetVertices(vec2 vertices[]);
 
     static void CalculateCoefficients();
     static void CalculateVertices();

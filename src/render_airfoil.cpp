@@ -25,9 +25,10 @@ void Airfoil::RenderFrame(){
 }
 
 void Airfoil::DrawGrid(){
-    const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    const double coeff = min_dim - 2.0 * MISES_PADDING;
+    const double width = GetFrameRegionWidth();
+    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
+    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
+    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -37,17 +38,20 @@ void Airfoil::DrawGrid(){
     const vec3 color = MISES_GRID_COLOR;
     Shader::SetColor(color);
 
-    const double x_norm_left  = 0.5 * (1.0 - Frame.width / coeff);
-    const double x_norm_right = 0.5 * (1.0 + Frame.width / coeff);
+    const double x_origin = 0.5 * (Frame.width - width);
+    const double y_origin = 0.5 * Frame.height + VerticalOffset * width;
 
-    const double y_norm_bottom = -Frame.height / coeff - VerticalOffset;
-    const double y_norm_top    =  Frame.height / coeff - VerticalOffset;
+    const double x_norm_left  = 0.5 * (1.0 - Frame.width / width);
+    const double x_norm_right = 0.5 * (1.0 + Frame.width / width);
+
+    const double y_norm_bottom = -0.5 * Frame.height / width - VerticalOffset;
+    const double y_norm_top    =  0.5 * Frame.height / width - VerticalOffset;
 
     glBegin(GL_LINES);
 
     for(int i = x_norm_left / MISES_GRID_SPACING; i < x_norm_right / MISES_GRID_SPACING; ++i){ if(i != 0){
         const double x_norm = i * MISES_GRID_SPACING;
-        const double x = x_norm * coeff + 0.5 * (Frame.width - coeff);
+        const double x = x_norm * width + x_origin;
 
         glVertex2f(x, 0.0f);
         glVertex2f(x, Frame.height);
@@ -55,7 +59,7 @@ void Airfoil::DrawGrid(){
 
     for(int i = y_norm_bottom / MISES_GRID_SPACING; i < y_norm_top / MISES_GRID_SPACING; ++i){ if(i != 0){
         const double y_norm = i * MISES_GRID_SPACING;
-        const double y = (y_norm + VerticalOffset) * coeff + 0.5 * Frame.height;
+        const double y = y_norm * width + y_origin;
         
         glVertex2f(0.0f,        y);
         glVertex2f(Frame.width, y);
@@ -65,9 +69,10 @@ void Airfoil::DrawGrid(){
 }
 
 void Airfoil::DrawAxes(){
-    const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    const double coeff = min_dim - 2.0 * MISES_PADDING;
+    const double width = GetFrameRegionWidth();
+    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
+    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
+    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -77,29 +82,30 @@ void Airfoil::DrawAxes(){
     const vec3 color = MISES_AXIS_COLOR;
     Shader::SetColor(color);
 
-    const double x = 0.5 * (Frame.width - coeff);
-    const double y = 0.5 * Frame.height + VerticalOffset * coeff;
+    const double x_origin = 0.5 * (Frame.width - width);
+    const double y_origin = 0.5 * Frame.height + VerticalOffset * width;
 
     glBegin(GL_LINES);
 
-    glVertex2f(0.0f, y);
-    glVertex2f(Frame.width, y);
-    glVertex2f(x, 0.0f);
-    glVertex2f(x, Frame.height);
+    glVertex2f(0.0f, y_origin);
+    glVertex2f(Frame.width, y_origin);
+    glVertex2f(x_origin, 0.0f);
+    glVertex2f(x_origin, Frame.height);
 
     glEnd();
 }
 
 void Airfoil::DrawAirfoil(){
-    const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    const double coeff = min_dim - 2.0 * MISES_PADDING;
+    const double width = GetFrameRegionWidth();
+    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
+    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
+    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
-    Shader::SetScale(coeff);
+    Shader::SetScale(width);
 
     const vec2 position = {
-        static_cast<float>(0.5f * (Frame.width - coeff)),
-        static_cast<float>(0.5f * Frame.height + VerticalOffset * coeff)
+        static_cast<float>(0.5f * (Frame.width - width)),
+        static_cast<float>(0.5f * Frame.height + VerticalOffset * width)
     };
     Shader::SetTrans(position);
 
