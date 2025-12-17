@@ -1,31 +1,27 @@
-#include <MISES/airfoil.hpp>
+#include <MISES/velocities.hpp>
 
 #include <MISES/options.hpp>
 #include <MISES/shader.hpp>
 #include <MISES/pallet.hpp>
+#include <MISES/airfoil.hpp>
 
 using namespace mises;
 
-void Airfoil::Initialize(){
-    Shader::Initialize();
+void Velocities::Initialize(){
 
-    if(Vertices[0][0] == 0){
-        CalculateVertices();
-    }
 }
 
-void Airfoil::RenderFrame(){
-    Initialize();
-
+void Velocities::RenderFrame(){
     Pallet::Create(Frame);
 
     DrawGrid();
     DrawAxes();
-    DrawAirfoil();
+    DrawVelocities();
 }
 
-void Airfoil::DrawGrid(){
-    const double width = GetFrameRegionWidth();
+void Velocities::DrawGrid(){
+    const double width = Airfoil::GetFrameRegionWidth();
+    const double height = Frame.height - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -36,13 +32,13 @@ void Airfoil::DrawGrid(){
     Shader::SetColor(color);
 
     const double x_origin = 0.5 * (Frame.width - width);
-    const double y_origin = 0.5 * Frame.height + VerticalOffset * width;
+    const double y_origin = 0.5 * (Frame.height - height);
 
     const double x_norm_left  = 0.5 * (1.0 - Frame.width / width);
     const double x_norm_right = 0.5 * (1.0 + Frame.width / width);
 
-    const double y_norm_bottom = -0.5 * Frame.height / width - VerticalOffset;
-    const double y_norm_top    =  0.5 * Frame.height / width - VerticalOffset;
+    const double y_norm_bottom = 0;
+    const double y_norm_top    = MaxVelocity;
 
     glBegin(GL_LINES);
 
@@ -56,7 +52,7 @@ void Airfoil::DrawGrid(){
 
     for(int i = y_norm_bottom / MISES_GRID_SPACING; i < y_norm_top / MISES_GRID_SPACING; ++i){ if(i != 0){
         const double y_norm = i * MISES_GRID_SPACING;
-        const double y = y_norm * width + y_origin;
+        const double y = y_norm / MaxVelocity * height + y_origin;
         
         glVertex2f(0.0f,        y);
         glVertex2f(Frame.width, y);
@@ -65,8 +61,9 @@ void Airfoil::DrawGrid(){
     glEnd();
 }
 
-void Airfoil::DrawAxes(){
-    const double width = GetFrameRegionWidth();
+void Velocities::DrawAxes(){
+    const double width = Airfoil::GetFrameRegionWidth();
+    const double height = Frame.height - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -77,11 +74,11 @@ void Airfoil::DrawAxes(){
     Shader::SetColor(color);
 
     const double x_origin = 0.5 * (Frame.width - width);
-    const double y_origin = 0.5 * Frame.height + VerticalOffset * width;
+    const double y_origin = 0.5 * (Frame.height - height);
 
     glBegin(GL_LINES);
 
-    glVertex2f(0.0f, y_origin);
+    glVertex2f(0.0f,        y_origin);
     glVertex2f(Frame.width, y_origin);
     glVertex2f(x_origin, 0.0f);
     glVertex2f(x_origin, Frame.height);
@@ -89,14 +86,15 @@ void Airfoil::DrawAxes(){
     glEnd();
 }
 
-void Airfoil::DrawAirfoil(){
-    const double width = GetFrameRegionWidth();
+void Velocities::DrawVelocities(){
+    const double width = Airfoil::GetFrameRegionWidth();
+    const double height = Frame.height - 2.0 * MISES_PADDING;
 
     Shader::SetScale(width);
 
     const vec2 position = {
         static_cast<float>(0.5f * (Frame.width - width)),
-        static_cast<float>(0.5f * Frame.height + VerticalOffset * width)
+        static_cast<float>(0.5f * (Frame.height - height))
     };
     Shader::SetTrans(position);
 
@@ -106,8 +104,12 @@ void Airfoil::DrawAirfoil(){
     glBegin(GL_LINE_LOOP);
 
     for(size_t i = 0; i < MISES_VERTEX_COUNT; ++i){
-        glVertex2fv(Vertices[i]);
+        const float x = VelocityVertices[i][0];
+        const float q = VelocityVertices[i][1] * height / width / MaxVelocity;
+
+        glVertex2f(x, q);
     }
 
     glEnd();
 }
+

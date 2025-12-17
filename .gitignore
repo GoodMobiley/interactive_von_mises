@@ -4,4 +4,3 @@ extern/glad/src/*
 !extern/glad/src/CMakeLists.txt
 
 build/*
-!build/interactive_von_mises.exe

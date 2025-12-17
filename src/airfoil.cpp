@@ -2,7 +2,7 @@
 
 #include <MISES/options.hpp>
 #include <MISES/cylinder.hpp>
-#include <MISES/pressure.hpp>
+#include <MISES/velocities.hpp>
 
 #include <tinyfiledialogs.h>
 
@@ -34,8 +34,22 @@ void Airfoil::SetFrameRect(Rect frame){
     Frame = frame;
 }
 
+double Airfoil::GetFrameRegionWidth(){
+    const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
+    const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
+
+    return min_dim - 2.0 * MISES_PADDING;
+}
+
 std::vector<Complex> Airfoil::GetCoefficients(){
     return Coefficients;
+}
+
+void Airfoil::GetVertices(vec2 vertices[]){
+    for(size_t i = 0; i < MISES_VERTEX_COUNT; ++i){
+        vertices[i][0] = Vertices[i][0];
+        vertices[i][1] = Vertices[i][1];
+    }
 }
 
 void Airfoil::CalculateCoefficients(){
@@ -122,6 +136,8 @@ void Airfoil::CalculateVertices(){
 
     Thickness = (max_imag - min_imag) / (max_real - min_real);
     VerticalOffset = (te_imag - 0.5 * (max_imag + min_imag)) * vertex_coeff;
+
+    OnVertexUpdate();
 }
 
 void Airfoil::SaveAirfoil(){
@@ -130,5 +146,5 @@ void Airfoil::SaveAirfoil(){
 }
 
 void Airfoil::OnVertexUpdate(){
-    Pressure::CalculatePressure();
+    Velocities::CalculateVelocities();
 }

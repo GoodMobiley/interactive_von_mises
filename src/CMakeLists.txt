@@ -12,8 +12,8 @@ add_library(von_mises_lib
     airfoil.cpp
     render_airfoil.cpp
 
-    pressure.cpp
-    render_pressure.cpp
+    velocities.cpp
+    render_velocities.cpp
 )
 
 target_include_directories(von_mises_lib PUBLIC

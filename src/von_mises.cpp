@@ -4,7 +4,7 @@
 #include <MISES/shader.hpp>
 #include <MISES/cylinder.hpp>
 #include <MISES/airfoil.hpp>
-#include <MISES/pressure.hpp>
+#include <MISES/velocities.hpp>
 
 using namespace mises;
 
@@ -18,7 +18,7 @@ void mises::Initialize(){
     Shader::Initialize();
     Cylinder::Initialize();
     Airfoil::Initialize();
-    Pressure::Initialize();
+    Velocities::Initialize();
 
     int width;
     int height;
@@ -48,7 +48,7 @@ void mises::RenderFrame(){
 
     Cylinder::RenderFrame();
     Airfoil::RenderFrame();
-    Pressure::RenderFrame();
+    Velocities::RenderFrame();
 
     glfwSwapBuffers(glfwGetCurrentContext());
 }
@@ -68,7 +68,7 @@ void mises::SetFrameRect(Rect render_frame_rect){
         0.3 * render_frame_rect.height - MISES_MARGIN
     });
 
-    Pressure::SetFrameRect({
+    Velocities::SetFrameRect({
         render_frame_rect.x + 0.5 * (render_frame_rect.width + MISES_MARGIN),
         render_frame_rect.y + 0.3 * render_frame_rect.height + 0.5 * MISES_MARGIN,
         0.5 * render_frame_rect.width  - MISES_MARGIN,
@@ -115,6 +115,15 @@ void mises::CursorPosCallaback(GLFWwindow* window, double x_pos, double y_pos){
             y_pos + frame_rect.y + frame_rect.height - height
         );
     }
+    else if(cursor_pos.inside_rect(Velocities::GetFrameRect())){
+        const Rect frame_rect = Velocities::GetFrameRect();
+
+        Velocities::CursorPosCallback(
+            window,
+            x_pos - frame_rect.x, 
+            y_pos + frame_rect.y + frame_rect.height - height
+        );
+    }
     else{
         glfwSetCursor(window, NULL);
     }
@@ -141,5 +150,8 @@ void mises::MouseButtonCallback(GLFWwindow* window, int button, int action, int 
     }
     else if(cursor_pos.inside_rect(Airfoil::GetFrameRect())){
         Airfoil::MouseButtonCallback(window, button, action, mod);
+    }
+    else if(cursor_pos.inside_rect(Velocities::GetFrameRect())){
+        Velocities::MouseButtonCallback(window, button, action, mod);
     }
 }
