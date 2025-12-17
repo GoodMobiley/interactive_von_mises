@@ -26,9 +26,6 @@ void Airfoil::RenderFrame(){
 
 void Airfoil::DrawGrid(){
     const double width = GetFrameRegionWidth();
-    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -70,9 +67,6 @@ void Airfoil::DrawGrid(){
 
 void Airfoil::DrawAxes(){
     const double width = GetFrameRegionWidth();
-    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
     Shader::SetScale(1.0f);
 
@@ -97,9 +91,6 @@ void Airfoil::DrawAxes(){
 
 void Airfoil::DrawAirfoil(){
     const double width = GetFrameRegionWidth();
-    // const double adjusted_height = (Frame.height - 2.0 * MISES_PADDING) / Thickness + 2.0 * MISES_PADDING;
-    // const double min_dim = Frame.width > adjusted_height? adjusted_height: Frame.width;
-    // const double coeff = min_dim - 2.0 * MISES_PADDING;
 
     Shader::SetScale(width);
 
